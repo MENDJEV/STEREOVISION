@@ -15,16 +15,19 @@ def CameraCalibration(Size,path,path1image, savename):
     criteria = (cv.TERM_CRITERIA_EPS + cv.TERM_CRITERIA_MAX_ITER, 30, 0.001)
     # prepare object points, like (0,0,0), (1,0,0), (2,0,0) ....,(6,5,0)
     ############ to adapt ##########################
-    objp = np.zeros((Size[0]*Size[1], 3), np.float32)
+    objp = np.zeros((Size[0]*Size[1], 3), np.float32) #Création des points 3D réels du damier
     objp[:, :2] = np.mgrid[0:Size[0], 0:Size[1]].T.reshape(-1, 2)
     # 
     objp[:, :2] *= 40
     #################################################
     # 
-    objpoints = []  # 
-    imgpoints = []  # 
+    objpoints = []  # points 3D réels du damier
+    imgpoints = []  # points 2D détectés dans l'image en pixels
     ######################################
-    images = glob.glob(path)
+    images = glob.glob(path) #recupère toutes les images qui matchent path 
+    print("Nb images trouvées:", len(images))
+    print(images[:5])
+
     #################################################
     for fname in images:
         img = cv.imread(fname)
@@ -36,8 +39,8 @@ def CameraCalibration(Size,path,path1image, savename):
         print(ret)
         #
         if ret == True:
-            objpoints.append(objp)
-            corners2 = cv.cornerSubPix(gray, corners, (11, 11), (-1, -1), criteria)
+            objpoints.append(objp)#ajoute les points 3D réels
+            corners2 = cv.cornerSubPix(gray, corners, (11, 11), (-1, -1), criteria) #raffine les coins au sous pixel plus précis
             imgpoints.append(corners)
             # 
             ######################################
@@ -70,7 +73,7 @@ def CameraCalibration(Size,path,path1image, savename):
     cv.imshow('img', dst)
     cv.waitKey(0)
     ############ to adapt ##########################
-    cv.imwrite(savename, dst)
+    cv.imwrite(savename, dst) #nouvelle matrice de la  caméra et l'image corrigée sans distorsion
     #################################################
 
     mean_error = 0
@@ -246,15 +249,17 @@ def DepthMapfromStereoImages(imgL, imgR):
     cv.waitKey(0)
     cv.destroyAllWindows()
 
+
+
 if __name__ == "__main__":
     ############ to adapt ##########################
-    path1 = 'Images/rouge/*.jpg'
-    path2 = 'Images/bleu/*.jpg'
+    path1 = 'Image_calibration/Camera_droite/*.jpg'
+    path2 = 'Image_calibration/Camera_Gauche/*.jpg'
     # image à rectifier
-    path1image = 'Images/rouge2.jpg'
-    savename1 = 'Images/rouge2rect.png'
-    path2image = 'Images/bleu2.jpg'
-    savename2 = 'Images/bleu2rect.png'
+    path1image = 'Image_calibration/Camera_droite/imD1.jpg'
+    savename1 = 'Camera_droite/droitrect.png'
+    path2image = 'Image_calibration/Camera_Gauche/imG1.jpg'
+    savename2 = 'Image_calibration/Camera_Gauche/gauchrect.png'
     Size = [8, 5]
     #################################################
     cameraMatrix1, rect1 = CameraCalibration(Size,path1,path1image, savename1)
@@ -275,3 +280,5 @@ if __name__ == "__main__":
     #################################################
     DepthMapfromStereoImages(imageL, imageR)
 
+
+print(CameraCalibration([8, 5],'Image_calibration/Camera_droite/*.jpg','Image_calibration/Camera_droite/imD1.jpg','test1'))
